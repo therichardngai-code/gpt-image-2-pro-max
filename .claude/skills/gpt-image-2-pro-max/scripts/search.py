@@ -4,9 +4,8 @@ Plain-text query, BM25-ranked, with a small tag-aware boost. Drives the
 media-designer agent (see agents/media-designer.md).
 
 Examples:
-  python scripts/search.py "luxury shoe ecommerce ad cream pastel" --has-prompt
+  python scripts/search.py "luxury shoe ecommerce ad cream pastel"
   python scripts/search.py "moody cinematic portrait 35mm" --shape portrait -n 3
-  python scripts/search.py --author Polanco_IA --has-prompt --full
   python scripts/search.py "neon ui" --persist plans/neon-refs.md
   python scripts/search.py --list moods
 """

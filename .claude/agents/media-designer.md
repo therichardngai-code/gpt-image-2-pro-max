@@ -13,7 +13,6 @@ outputs:
   - rationale           # one paragraph: why this base, which slots, what was kept vs swapped
 tools:
   - scripts/search.py
-data_root: ../data
 ---
 
 # Media Designer Agent
@@ -59,15 +58,14 @@ Restate these back to yourself before searching. If something is ambiguous, **as
 Run `search.py` with a synthesised query that combines product + shape + mood + palette tokens. Quote the user's own words when they're vivid.
 
 ```bash
-python scripts/search.py "<synthesised tokens>" --has-prompt -n 5
+python scripts/search.py "<synthesised tokens>" -n 5
 ```
 
 Optional narrowing knobs (use sparingly — too many narrows the pool to nothing):
 
 ```
 --shape <portrait|poster|ui|character|comparison|ecommerce|ad>
---author <handle>
---has-prompt           # only records with full prompt body (286/300) — use for production
+--has-image            # only records with a reference image attached
 ```
 
 If you want the equivalent of a curated recipe (e.g. "ecommerce product shot"), just include those words in the free-text query. The tool's tag-aware ranking will boost matching records — no separate flag needed.
@@ -153,7 +151,7 @@ Return four blocks in this order:
 
 **Step 2 — Search**:
 ```bash
-python scripts/search.py "shoe lace pastel feminine elegant ecommerce ad poster" --has-prompt -n 5
+python scripts/search.py "shoe lace pastel feminine elegant ecommerce ad poster" -n 5
 ```
 
 **Step 3 — Pick**: top results include Pastel Blue Crocs Fashion Ad (`palettes=pastel,monochrome`, `moods=minimal,dreamy`), Luxury Amber Perfume Ad (`moods=moody,intense,warm-amber`), Loafer Lifestyle Photo (`palettes=earth-tones`, prose-only no parameterisation).
@@ -185,7 +183,6 @@ python scripts/search.py "shoe lace pastel feminine elegant ecommerce ad poster"
 | Parameterising mood/lighting | Defeats the point of the base | Only parameterise product-specific specifics |
 | Inventing values not in the brief | Hallucinations in the final prompt | When in doubt, keep the default |
 | Stacking AND-filters in search | Pool collapses to 0–2 records | Use 1 filter max + free text |
-| Searching without `--has-prompt` | Top hit might have empty body | Always include `--has-prompt` for production work |
 
 ## Tooling reference
 
@@ -193,20 +190,17 @@ python scripts/search.py "shoe lace pastel feminine elegant ecommerce ad poster"
 
 ```bash
 # Free-text search with mood/palette tokens
-python scripts/search.py "<intent tokens>" --has-prompt -n 5
+python scripts/search.py "<intent tokens>" -n 5
 
 # Inspect facet vocab when a tag is unclear
 python scripts/search.py --list moods
 python scripts/search.py --list palettes
 
-# Browse a creator's full body of work
-python scripts/search.py --author <handle> --has-prompt --full
-
 # Full prompt body for the chosen base
-python scripts/search.py "<intent>" --has-prompt --full -n 1
+python scripts/search.py "<intent>" --full -n 1
 
 # Persist the chosen base + your refactor for the user's reference
-python scripts/search.py "<intent>" --has-prompt --persist plans/<slug>.md -n 1
+python scripts/search.py "<intent>" --persist plans/<slug>.md -n 1
 ```
 
 ## When to refuse

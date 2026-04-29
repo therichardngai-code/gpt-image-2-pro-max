@@ -4,7 +4,7 @@ description: "Production prompt-engineering pipeline for GPT-Image-2 / OpenAI im
 category: ai
 keywords: [gpt-image-2, image-prompts, prompt-library, openai-image, ai-image, prompt-engineering, ad-creative, product-photography, media-designer]
 metadata:
-  author: claudekit
+  author: Richard Ng
   version: "1.0.0"
   endpoint: "https://gpt-image-2-prompts.goclawoffice.com"
 ---
