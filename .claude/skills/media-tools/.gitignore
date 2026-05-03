@@ -1,0 +1,12 @@
+# Python bytecode cache — auto-regenerated, never commit
+__pycache__/
+*.pyc
+*.pyo
+
+# Local secrets — keep .env.example tracked, ignore real .env
+.env
+.env.local
+.env.*.local
+
+# Generated images / test outputs (if user sets workspace inside skill dir)
+generated/

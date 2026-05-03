@@ -70,6 +70,35 @@ Optional narrowing knobs (use sparingly — too many narrows the pool to nothing
 
 If you want the equivalent of a curated recipe (e.g. "ecommerce product shot"), just include those words in the free-text query. The tool's tag-aware ranking will boost matching records — no separate flag needed.
 
+**Controlled-vocab cheat-sheet (high-signal tokens).** The server applies a tag-boost: records whose `tags.<facet>` slugs match a query token rank higher. Free-text queries miss this boost when they use natural language ("influencer in front of camera") instead of the actual tag slugs ("person-portrait influencer-model"). Always seed the query with **2-4 tokens from this cheat-sheet** before adding free-text descriptors:
+
+| Facet | Common slugs (high-signal) |
+|---|---|
+| **subjects** | `person-portrait` · `influencer-model` · `product` · `fashion-item` · `ui-screen` · `character` · `interior` · `architecture` · `vehicle` · `animal` · `food-drink` · `social-post` · `diagram-chart` · `cityscape` · `poster-art` · `abstract` |
+| **styles** | `photorealistic` · `cinematic` · `editorial` · `isometric` · `illustration` · `anime` · `comic` · `3d-render` · `flat` · `watercolor` |
+| **moods** | `vibrant` · `energetic` · `luxurious` · `moody` · `dreamy` · `playful` · `minimal` · `intense` · `warm-emotional` · `nostalgic` · `mystical` · `cold-clinical` · `wholesome` · `edgy` |
+| **palettes** | `pastel` · `neon-cyber` · `earth-tones` · `cool-blue` · `gold-black` · `monochrome` · `high-contrast` · `warm-amber` |
+| **lighting** | `natural-light` · `neon` · `rim-light` · `chiaroscuro` · `low-key` · `high-key` · `studio` |
+| **techniques** | `parameterised-template` · `aspect-explicit` |
+| **usecases** | `poster-flyer` · `app-web-design` · `profile-avatar` |
+
+Example transformation:
+- ❌ `"influencer livestream selling product ring light vibrant energetic portrait realistic"` → top-1 may be UI-screen mockup (lexical noise wins)
+- ✅ `"person-portrait influencer-model product vibrant energetic photorealistic ring light livestream"` → top-1 lands on a parameterised influencer/product template
+
+**Subject-mismatch retry.** If top-1 returns the wrong subject (e.g. you wanted a person but got a UI screen, or wanted a product but got a poster), retry with the correct **subjects slug as the FIRST token** plus 1-2 mood/style slugs. The server weights early tokens slightly higher and the tag-boost compounds: `"person-portrait vibrant photorealistic <free text>"` beats `"<free text> portrait"` for landing on the right subject.
+
+**Multilingual retry.** Search uses BM25 (lexical), so a query in Vietnamese / Korean / Thai / etc. will miss prompts written in other languages even when those prompts produce great images. If a non-English query returns weak hits, **retry in English plus a cultural hint**:
+
+| Brief language → query language | Cultural hint to add |
+|---|---|
+| Vietnamese / Indonesian / Thai brief | English query + "Chinese" / "Japanese" / "K-pop" / "Southeast Asian" |
+| Korean brief | English query + "Korean" / "K-pop" / "K-beauty" |
+| Spanish / Portuguese brief | English query + "Latin" / "Mexican" / "Brazilian" |
+| English brief targeting Asian aesthetic | Add "Chinese" / "Douyin" / "Japanese" / "Korean" explicitly |
+
+Example: brief "tiktoker Việt bán mỹ phẩm livestream" → first search in English: `"livestream selling cosmetics influencer ring light"` → if weak, retry: `"Chinese livestream beauty streamer dorm Douyin"`. Many of the strongest livestream/influencer/e-commerce bases in the corpus are Chinese-prompt records — refactor them by overriding the language of UI text and copy at Step 4-5; the visual structure transfers cleanly.
+
 ### 3. Pick the best mood-aligned match (not just top-1)
 
 Inspect the `tags:` line on each result. **Reject mood mismatches.**

@@ -12,9 +12,10 @@ If you find this useful, consider giving it a star. ⭐
 
 - **Agent**: `.claude/agents/media-designer.md` — diagnoses your brief, picks a mood-aligned base, refactors it into a parameterised template, and returns a paste-ready prompt.
 - **Skill + tool**: `.claude/skills/gpt-image-2-pro-max/` — `search.py` thin client over a hosted backend (BM25 search across 10 facet vocabularies).
+- **Companion skill**: `.claude/skills/media-tools/` — optional CLI for actually generating images (multi-provider chain: OpenRouter → Gemini → OpenAI gpt-image-2 → MiniMax → DashScope → BytePlus, or your ChatGPT Plus session). See its own `README.md` for setup.
 - **Hosted backend** (already live): `https://gpt-image-2-prompts.goclawoffice.com`
   - Thousands of indexed prompts with BM25 search and reference images
-  - Rate-limited per IP for fair use
+  - Rate-limited per IP for fair use; a small set of guards keeps the corpus available to everyone (origin/UA gate, ≥3-token queries, daily budgets, edge cache)
 
 ## Install
 
@@ -35,14 +36,24 @@ Python 3.8+ required (uses stdlib only — no pip install).
 In Claude Code, invoke the skill directly or let the `media-designer` agent drive:
 
 ```bash
-# Bare CLI (free-text search)
-python .claude/skills/gpt-image-2-pro-max/scripts/search.py "luxury shoe ad" -n 5
+# Free-text search (BM25 + tag-aware ranking; needs ≥3 descriptive tokens)
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py "luxury shoe ad cream pastel" -n 5
 
-# With image filter
-python .claude/skills/gpt-image-2-pro-max/scripts/search.py "anime portrait" --has-image -n 3
+# Narrow by output shape, require a reference image
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py "moody cinematic portrait 35mm" \
+    --shape portrait --has-image -n 3
 
-# Persist top hits as a markdown reference deck
-python .claude/skills/gpt-image-2-pro-max/scripts/search.py "neon ui" --persist refs.md
+# Show full prompt body for every rank (top-1 is always full)
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py "neon ui dashboard" --full -n 3
+
+# Persist top hits as a markdown reference deck (with embedded images)
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py "anime portrait" --persist refs.md
+
+# Browse the controlled vocabulary (10 facets: subjects, styles, lighting,
+# cameras, moods, palettes, compositions, mediums, techniques, usecases)
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py --list facets
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py --list moods
+python .claude/skills/gpt-image-2-pro-max/scripts/search.py --list palettes
 ```
 
 The agent profile is canonical — its `diagnose → search → pick → refactor → resolve` loop is how good prompts get built.

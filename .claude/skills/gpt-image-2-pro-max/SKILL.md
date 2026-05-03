@@ -14,7 +14,7 @@ metadata:
 Two-piece skill:
 
 1. **`scripts/search.py`** — thin HTTP client over a hosted corpus of 3,238 community-vetted prompts. BM25-ranked, tagged across 10 facets.
-2. **`agents/media-designer.md`** — agent profile that *uses* the search tool to turn a user brief into a paste-ready GPT-Image-2 prompt.
+2. **`~/.claude/agents/media-designer.md`** — agent profile that *uses* the search tool to turn a user brief into a paste-ready GPT-Image-2 prompt.
 
 The tool finds candidates. The agent owns the judgement (which base, which slots to parameterise, which to keep literal, mood/palette fit).
 
@@ -35,7 +35,7 @@ The tool finds candidates. The agent owns the judgement (which base, which slots
 For any production prompt request:
 
 ```
-1. Read agents/media-designer.md
+1. Read ~/.claude/agents/media-designer.md
 2. Run the 6-step workflow it defines
 3. Return the 4-block output (Base · Parameterised · Resolved · Rationale)
 ```
@@ -55,14 +55,19 @@ search.py [query] [--shape SHAPE] [--has-image] [-n N] [--full] [--persist PATH]
 ```
 
 ```bash
+# Use the shared skill venv on Windows / POSIX:
+#   Windows : .claude\skills\.venv\Scripts\python.exe
+#   POSIX   : .claude/skills/.venv/bin/python3
+# Examples below use the Windows path; swap on POSIX.
+
 # Free-text search (this is what the agent calls)
-python scripts/search.py "luxury shoe ecommerce ad cream pastel" -n 5
+.claude\skills\.venv\Scripts\python.exe .claude\skills\gpt-image-2-pro-max\scripts\search.py "luxury shoe ecommerce ad cream pastel" -n 5
 
 # Narrow by shape when the brief is specific about format
-python scripts/search.py "perfume bottle" --shape ecommerce -n 3
+.claude\skills\.venv\Scripts\python.exe .claude\skills\gpt-image-2-pro-max\scripts\search.py "perfume bottle" --shape ecommerce -n 3
 
 # Persist top hits as a markdown reference deck (with embedded images)
-python scripts/search.py "neon ui" --persist plans/neon-refs.md
+.claude\skills\.venv\Scripts\python.exe .claude\skills\gpt-image-2-pro-max\scripts\search.py "neon ui" --persist plans\neon-refs.md
 ```
 
 Filter knobs:
@@ -96,7 +101,7 @@ Filter knobs:
 |---|---|
 | Mental model | `brief → diagnose → search → pick (mood-aware) → refactor → resolve → output` |
 | Step 1 — Diagnose | Extract product, brand, shape, mood, palette, technique signals from the brief |
-| Step 2 — Search | Synthesise tokens, run `search.py "<tokens>" -n 5` |
+| Step 2 — Search | Synthesise tokens, run `.claude/skills/.venv/Scripts/python.exe .claude/skills/gpt-image-2-pro-max/scripts/search.py "<tokens>" -n 5` |
 | Step 3 — Pick | Mood-mismatch rejection table — pastel briefs reject `moody/gritty/dark-amber`, etc. |
 | Step 4 — Refactor | Replace product-specifics with `{argument name="X" default="Y"}` slots; keep mood/lighting/style words literal |
 | Step 5 — Resolve | Fill slots from user intent; default-fallback when ambiguous; never invent |
