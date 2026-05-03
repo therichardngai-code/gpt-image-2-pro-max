@@ -68,6 +68,8 @@ Big thanks to the **[EvoLinkAI/awesome-gpt-image-2-prompts](https://github.com/E
 
 If you use this skill, please also star their repo — most prompts here trace back to authors they collected and credited first.
 
+The `media-tools` companion skill's **ChatGPT / Codex OAuth image-generation** path is a Python port of the pattern landed in **[nextlevelbuilder/goclaw#1002](https://github.com/nextlevelbuilder/goclaw/pull/1002)** — same priority-chain idea (skip provider if no key → first success wins → cascade on failure), same OAuth-token reuse trick so users with an existing ChatGPT Plus subscription don't need a separate API key. Credit and gratitude to the goclaw maintainers.
+
 ## License
 
 Prompt content belongs to the original authors (Twitter/X handles in each record). Skill code is MIT.
