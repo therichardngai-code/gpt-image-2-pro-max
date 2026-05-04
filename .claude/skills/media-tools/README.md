@@ -81,6 +81,7 @@ Common flags:
 | `--model` | override the model for the chosen provider (e.g. `--model gemini-3-pro-image-preview` for Banana Pro) |
 | `--image-model` | `chatgpt_oauth` only — image model whitelist: `gpt-image-2` (default), `gpt-image-1.5` (legacy) |
 | `--workspace` | output dir (default `$WEB_TOOLS_WORKSPACE` or OS temp) |
+| `--reference-image` | seed generation with a reference (PNG/JPG/WEBP). Repeatable; up to 4. Only `chatgpt_oauth`, `gemini`, `openai` support this — the chain auto-skips others with a clear message. |
 | `--list-providers` | print which providers are configured right now (✓/✗) and exit. Use to diagnose "no providers callable" errors. |
 
 Output lands at `<workspace>/generated/<YYYY-MM-DD>/<slug>-<ts>-<rand>.png`. The full prompt is embedded in the PNG `tEXt` chunk so you can retrieve provenance later.
@@ -95,6 +96,28 @@ Set-Content -Encoding utf8 prompt.txt "một quán cà phê Việt Nam buổi s�
   --prompt-file prompt.txt --aspect-ratio 1:1
 # → filename auto-derived: mt-qun-c-ph-vit-...png
 ```
+
+### Use a reference image (image-to-image)
+
+Pass one or more reference images to seed generation. Useful for restyling, character-consistency, or product-shot edits.
+
+```powershell
+.claude\skills\.venv\Scripts\python.exe .claude\skills\media-tools\scripts\create_image.py `
+  --prompt "Same character, now wearing a red trench coat, neon Tokyo street at night" `
+  --reference-image .\character.png `
+  --aspect-ratio 9:16
+```
+
+Repeat the flag for multi-reference (e.g. character + style mood-board):
+
+```powershell
+.claude\skills\.venv\Scripts\python.exe .claude\skills\media-tools\scripts\create_image.py `
+  --prompt "Hero shot in the style of the moodboard" `
+  --reference-image .\character.png `
+  --reference-image .\moodboard.jpg
+```
+
+Supported by `chatgpt_oauth`, `gemini`, `openai`. PNG/JPG/WEBP only, max 4 images per call. Other providers in the chain are auto-skipped when refs are present.
 
 ### Pin a default provider
 

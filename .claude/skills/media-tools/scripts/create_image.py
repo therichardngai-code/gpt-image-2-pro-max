@@ -50,6 +50,55 @@ IMAGE_REGISTRY = {
 
 VALID_RATIOS = {"1:1", "3:4", "4:3", "9:16", "16:9"}
 
+# Subset of providers that can consume a reference image. Used to filter the
+# chain when --reference-image is supplied. Keep narrow — adding a provider
+# here implies its generate() handles params['reference_images'].
+PROVIDERS_SUPPORTING_REF_IMAGE = {"chatgpt_oauth", "gemini", "openai"}
+
+# Hard cap. Most providers accept 1-4 refs; beyond that the prompt body
+# becomes the bottleneck and behaviour gets unpredictable.
+MAX_REFERENCE_IMAGES = 4
+
+# File-extension → MIME map. Keep small — providers reject anything beyond
+# these three formats anyway.
+_REF_IMAGE_MIME = {
+    ".png":  "image/png",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
+
+
+def _load_reference_images(paths: list[str]) -> list[dict]:
+    """Read each path and return [{bytes, mime, name}, ...].
+
+    Raises a friendly ValueError on missing file, unreadable path, or
+    unsupported extension. Caps at MAX_REFERENCE_IMAGES.
+    """
+    if len(paths) > MAX_REFERENCE_IMAGES:
+        raise ValueError(
+            f"too many reference images ({len(paths)}); "
+            f"max {MAX_REFERENCE_IMAGES}"
+        )
+    refs: list[dict] = []
+    for raw in paths:
+        p = Path(raw).expanduser()
+        if not p.is_file():
+            raise ValueError(f"reference image not found: {raw}")
+        ext = p.suffix.lower()
+        mime = _REF_IMAGE_MIME.get(ext)
+        if not mime:
+            raise ValueError(
+                f"unsupported reference image format {ext!r}; "
+                f"allowed: {', '.join(sorted(_REF_IMAGE_MIME))}"
+            )
+        refs.append({
+            "bytes": p.read_bytes(),
+            "mime":  mime,
+            "name":  p.name,
+        })
+    return refs
+
 
 def _slug_from_prompt(prompt: str, max_words: int = 5) -> str:
     """Derive a kebab-case filename hint from the first words of a prompt.
@@ -104,6 +153,12 @@ def main() -> int:
     p.add_argument("--image-model", default="",
                    help="chatgpt_oauth only — image_generation model. "
                         "Whitelist: gpt-image-2 (default), gpt-image-1.5 (legacy)")
+    p.add_argument("--reference-image", action="append", default=[],
+                   metavar="PATH",
+                   help=f"Reference image to seed generation (PNG/JPG/WEBP). "
+                        f"Repeatable; up to {MAX_REFERENCE_IMAGES}. "
+                        f"Only providers in {sorted(PROVIDERS_SUPPORTING_REF_IMAGE)} "
+                        f"support this; chain skips others with a clear message.")
     p.add_argument("--list-providers", action="store_true",
                    help="Print which providers are configured right now and exit")
     args = p.parse_args()
@@ -129,6 +184,12 @@ def main() -> int:
     if not args.filename_hint:
         args.filename_hint = _slug_from_prompt(args.prompt)
 
+    try:
+        ref_images = _load_reference_images(args.reference_image)
+    except ValueError as e:
+        print(f"create_image: {e}", file=sys.stderr)
+        return 2
+
     requested_order = None
     if args.provider_order:
         requested_order = [
@@ -140,10 +201,32 @@ def main() -> int:
         forced_provider=args.provider or None,
     )
 
+    # When reference images are supplied, prune the chain to providers that
+    # actually support them. If pruning empties the chain, surface a clear
+    # message — better than silently failing each provider in cascade.
+    if ref_images:
+        unsupported = [p for p in chain if p not in PROVIDERS_SUPPORTING_REF_IMAGE]
+        if unsupported:
+            print(
+                f"create_image: skipping providers without reference-image "
+                f"support: {', '.join(unsupported)}",
+                file=sys.stderr,
+            )
+        chain = [p for p in chain if p in PROVIDERS_SUPPORTING_REF_IMAGE]
+        if not chain:
+            print(
+                "create_image: no configured provider supports reference "
+                f"images. Configure one of: "
+                f"{', '.join(sorted(PROVIDERS_SUPPORTING_REF_IMAGE))}",
+                file=sys.stderr,
+            )
+            return 3
+
     params = {
         "prompt": args.prompt,
         "aspect_ratio": args.aspect_ratio,
         "image_model": args.image_model,  # used by chatgpt_oauth provider
+        "reference_images": ref_images,
     }
     try:
         result = execute_chain(

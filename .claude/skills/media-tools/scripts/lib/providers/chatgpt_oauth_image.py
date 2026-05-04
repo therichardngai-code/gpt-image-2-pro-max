@@ -64,19 +64,34 @@ def _size_from_aspect(aspect: str) -> str:
 
 
 def _build_body(parent_model: str, image_model: str, prompt: str,
-                aspect: str, output_format: str) -> dict:
+                aspect: str, output_format: str,
+                ref_images: list[dict] | None = None) -> dict:
+    """Construct the Responses-API request body.
+
+    When ref_images is non-empty we append input_image content blocks
+    (data-URI form) to the user turn and switch the tool action to "edit".
+    The Codex backend treats a single content array with mixed input_text +
+    input_image blocks as the reference set for the edit.
+    """
+    user_content: list[dict] = [{"type": "input_text", "text": prompt}]
+    for ref in ref_images or []:
+        b64 = base64.b64encode(ref["bytes"]).decode("ascii")
+        user_content.append({
+            "type": "input_image",
+            "image_url": f"data:{ref['mime']};base64,{b64}",
+        })
+
+    tool_action = "edit" if ref_images else "generate"
+
     return {
         "model": parent_model,
         "stream": True,
         "store": False,
         "instructions": INSTRUCTIONS,
-        "input": [{
-            "role": "user",
-            "content": [{"type": "input_text", "text": prompt}],
-        }],
+        "input": [{"role": "user", "content": user_content}],
         "tools": [{
             "type": "image_generation",
-            "action": "generate",
+            "action": tool_action,
             "model": image_model,
             "output_format": output_format,
             "size": _size_from_aspect(aspect),
@@ -142,12 +157,14 @@ def generate(api_key_unused: str, api_base: str, model: str,
     image_model = _validate_image_model(params.get("image_model", ""))
     aspect = params.get("aspect_ratio", "1:1")
     output_format = params.get("output_format", "png")
+    ref_images = params.get("reference_images") or []
 
     base = (api_base or DEFAULT_API_BASE).rstrip("/")
     endpoint = f"{base}/codex/responses"
 
     token = get_access_token()
-    body = _build_body(parent_model, image_model, prompt, aspect, output_format)
+    body = _build_body(parent_model, image_model, prompt, aspect,
+                      output_format, ref_images)
 
     resp = requests.post(
         endpoint,

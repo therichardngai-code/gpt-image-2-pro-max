@@ -53,10 +53,20 @@ Options:
 - `--aspect-ratio` — `1:1` (default) | `3:4` | `4:3` | `9:16` | `16:9`
 - `--filename-hint` — kebab-slug for output file (no extension)
 - `--workspace` — output dir; default `$WEB_TOOLS_WORKSPACE` or OS temp
-- `--provider` — force a specific provider (skip chain): `openrouter|gemini|openai|minimax|dashscope|byteplus`
-- `--provider-order` — comma-separated chain override (default: `openrouter,gemini,openai,minimax,dashscope,byteplus`)
+- `--provider` — force a specific provider (skip chain): `chatgpt_oauth|openrouter|gemini|openai|minimax|dashscope|byteplus`
+- `--provider-order` — comma-separated chain override (default: `chatgpt_oauth,openrouter,gemini,openai,minimax,dashscope,byteplus`)
+- `--reference-image PATH` — seed generation with a reference image (PNG/JPG/WEBP). Repeatable, max 4. Supported by `chatgpt_oauth`, `gemini`, `openai`; chain auto-skips others when refs are present.
 
 Output saved to `<workspace>/generated/<YYYY-MM-DD>/<name>.png` with prompt embedded in PNG `tEXt` metadata.
+
+### Reference-image example (image-to-image / restyle / character-consistency)
+
+```bash
+.claude/skills/.venv/Scripts/python.exe .claude/skills/media-tools/scripts/create_image.py \
+  --prompt "Same character, now wearing a red trench coat, neon Tokyo street at night" \
+  --reference-image ./character.png \
+  --aspect-ratio 9:16
+```
 
 ## read_image
 

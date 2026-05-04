@@ -17,15 +17,27 @@ TIMEOUT_SECONDS = 120
 def generate(api_key: str, api_base: str, model: str,
              params: dict[str, Any]) -> bytes:
     prompt = params.get("prompt", "")
+    ref_images = params.get("reference_images") or []
 
     # Strip /openai compat suffix if env override provided one.
     native_base = api_base.rstrip("/")
     if native_base.endswith("/openai"):
         native_base = native_base[:-len("/openai")]
 
+    # Gemini takes mixed parts in a single content turn: each ref image as
+    # inlineData, plus the text prompt. Order matters for some models —
+    # ref images first, then the directive text.
+    parts: list[dict] = []
+    for ref in ref_images:
+        parts.append({"inlineData": {
+            "mimeType": ref["mime"],
+            "data": base64.b64encode(ref["bytes"]).decode("ascii"),
+        }})
+    parts.append({"text": prompt})
+
     url = f"{native_base}/models/{model}:generateContent?key={api_key}"
     body = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{"parts": parts}],
         "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
     }
 
