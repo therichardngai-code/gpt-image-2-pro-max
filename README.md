@@ -1,6 +1,6 @@
 # gpt-image-2-pro-max — Claude Code skill
 
-Production prompt-engineering skill for **GPT-Image-2 / OpenAI image generation**. Pairs a `media-designer` agent with a hosted searchable corpus of more than 3,000 community-vetted prompts.
+Production prompt-engineering skill for **GPT-Image-2 / OpenAI image generation**. Pairs a `media-designer` agent with a hosted searchable corpus of 7,030+ community-vetted prompts.
 
 We collect high-quality prompts and image examples for GPT-Image-2 across portraits, posters, character sheets, UI mockups, and community experiments.
 

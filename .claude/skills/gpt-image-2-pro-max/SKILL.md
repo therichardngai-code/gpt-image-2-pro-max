@@ -1,6 +1,6 @@
 ---
 name: gpt-image-2-pro-max
-description: "Production prompt-engineering pipeline for GPT-Image-2 / OpenAI image generation. Pairs a 'media-designer' agent with a hosted searchable corpus of 3,238 community-vetted prompts, decomposed across 10 controlled vocabularies (subjects, styles, lighting, cameras, moods, palettes, compositions, mediums, techniques, usecases). Each record carries: full prompt body, twitter/X attribution link, downloaded reference image. Workflow: agent diagnoses the user brief → searches the corpus → picks a mood-aligned base → refactors the chosen prompt into a parameterised {argument} template → resolves arguments from user intent → returns the final paste-ready prompt with attribution + reference image. Use when the user wants a polished image-generation prompt for ads, posters, product shots, portraits, character sheets, UI mockups, infographics, exploded-view diagrams, or any other GPT-Image-2 / OpenAI image task."
+description: "Production prompt-engineering pipeline for GPT-Image-2 / OpenAI image generation. Pairs a 'media-designer' agent with a hosted searchable corpus of 7,030 community-vetted prompts, decomposed across 10 controlled vocabularies (subjects, styles, lighting, cameras, moods, palettes, compositions, mediums, techniques, usecases). Each record carries: full prompt body, twitter/X attribution link, downloaded reference image. Workflow: agent diagnoses the user brief → searches the corpus → picks a mood-aligned base → refactors the chosen prompt into a parameterised {argument} template → resolves arguments from user intent → returns the final paste-ready prompt with attribution + reference image. Use when the user wants a polished image-generation prompt for ads, posters, product shots, portraits, character sheets, UI mockups, infographics, exploded-view diagrams, or any other GPT-Image-2 / OpenAI image task."
 category: ai
 keywords: [gpt-image-2, image-prompts, prompt-library, openai-image, ai-image, prompt-engineering, ad-creative, product-photography, media-designer]
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 Two-piece skill:
 
-1. **`scripts/search.py`** — thin HTTP client over a hosted corpus of 3,238 community-vetted prompts. BM25-ranked, tagged across 10 facets.
+1. **`scripts/search.py`** — thin HTTP client over a hosted corpus of 7,030 community-vetted prompts. BM25-ranked, tagged across 10 facets.
 2. **`~/.claude/agents/media-designer.md`** — agent profile that *uses* the search tool to turn a user brief into a paste-ready GPT-Image-2 prompt.
 
 The tool finds candidates. The agent owns the judgement (which base, which slots to parameterise, which to keep literal, mood/palette fit).
