@@ -1,6 +1,6 @@
 # gpt-image-2-pro-max — Claude Code skill
 
-Production prompt-engineering skill for **GPT-Image-2 / OpenAI image generation**. Pairs a `media-designer` agent with a hosted searchable corpus of 7,030+ community-vetted prompts.
+Production prompt-engineering skill for **GPT-Image-2 / OpenAI image generation**. Pairs a `media-designer` agent with a hosted searchable corpus of 7,405 community-vetted prompts (9,903 reference images).
 
 We collect high-quality prompts and image examples for GPT-Image-2 across portraits, posters, character sheets, UI mockups, and community experiments.
 
@@ -14,7 +14,7 @@ If you find this useful, consider giving it a star. ⭐
 - **Skill + tool**: `.claude/skills/gpt-image-2-pro-max/` — `search.py` thin client over a hosted backend (BM25 search across 10 facet vocabularies).
 - **Companion skill**: `.claude/skills/media-tools/` — optional CLI for actually generating images (multi-provider chain: OpenRouter → Gemini → OpenAI gpt-image-2 → MiniMax → DashScope → BytePlus, or your ChatGPT Plus session). See its own `README.md` for setup.
 - **Hosted backend** (already live): `https://gpt-image-2-prompts.goclawoffice.com`
-  - Thousands of indexed prompts with BM25 search and reference images
+  - 7,405 indexed prompts and 9,903 reference images with BM25 search
   - Rate-limited per IP for fair use; a small set of guards keeps the corpus available to everyone (origin/UA gate, ≥3-token queries, daily budgets, edge cache)
 
 ## Install
